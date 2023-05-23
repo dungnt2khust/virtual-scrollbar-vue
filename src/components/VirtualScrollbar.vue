@@ -1,16 +1,12 @@
 <template>
-  <div
-    :style="styleScrollbar"
-    class="virtual-scrollbar d-flex flex-column align-items-center"
-    v-if="haveScroll"
-  >
+  <div :style="styleScrollbar" class="virtual-scrollbar" v-if="haveScroll">
     <div
-      class="virtual-scrollbar__main position-relative h-100 w-100"
+      class="virtual-scrollbar__main"
       @mousedown="mousedownMain($event)"
       ref="wrapper"
     >
       <div
-        class="virtual-scrollbar__track position-absolute"
+        class="virtual-scrollbar__track"
         :style="{
           height: !horizontal ? trackSize + 'px' : 'calc(100% - 2px)',
           width: horizontal ? trackSize + 'px' : 'calc(100% - 2px)',
@@ -84,7 +80,7 @@ function handleScrollable() {
     let scrollLeft = elementScrollable.value!.scrollLeft;
     trackLeft.value = (scrollLeft / scrollSize.value) * thumbSize.value;
   } else {
-    let scrollTop = elementScrollable.value!.scrollTop;
+    let scrollTop = elementScrollable.value!.scroll;
     trackTop.value = (scrollTop / scrollSize.value) * thumbSize.value;
   }
 }
@@ -301,10 +297,17 @@ function outWrapper(e: any) {
 
 <style scoped lang="scss">
 .virtual-scrollbar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   &__main {
     background-color: #eee;
+    position: relative;
+    height: 100%;
+    width: 100%;
   }
   &__track {
+    position: absolute;
     background-color: #ccc;
     cursor: pointer;
     top: 10px;
