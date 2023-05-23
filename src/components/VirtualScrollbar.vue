@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-declare const window : any;
+declare const window: any;
 
 const props = defineProps<{ horizontal: boolean; id: string }>();
 
@@ -55,83 +55,109 @@ const haveScroll = ref<boolean>(false);
 
 onMounted(() => {
   setTimeout(() => {
-      checkHaveScroll();
-      setTimeout(() => {
-        setSizeScrollbar();
-      }, 100);
-    }, 100);
-
-    elementScrollable.value = document.getElementById(props.id) as HTMLElement;
-    elementScrollable.value.addEventListener('scroll', () => {
-      if (!props.horizontal) {
-        let scrollTop = elementScrollable.value!.scrollLeft;
-        trackTop.value = (scrollTop / scrollSize.value) * thumbSize.value;
-      } else {
-        let scrollLeft = elementScrollable.value!.scrollLeft;
-        trackLeft.value = (scrollLeft / scrollSize.value) * thumbSize.value;
-      }
-    });
-
-    window.addEventListener('mousemove', (e : any) => {
-      if (movingTrack.value) {
-        clearSelection();
-        var outWrapperVal = outWrapper(e);
-        if (!outWrapperVal.out) {
-          if (props.horizontal) {
-            trackLeft.value = e.clientX - startX.value;
-          } else {
-            trackTop.value = e.clientY - startY.value;
-          }
-        } else {
-          if (!props.horizontal) {
-            if (
-              trackTop.value <
-              thumbSize.value - trackSize.value - trackTop.value
-            ) {
-              trackTop.value = 0;
-            } else {
-              trackTop.value = thumbSize.value - trackSize.value;
-            }
-          } else {
-            if (
-              trackLeft.value <
-              thumbSize.value - trackSize.value - trackLeft.value
-            ) {
-              trackLeft.value = 0;
-            } else {
-              trackLeft.value = thumbSize.value - trackSize.value;
-            }
-          }
-        }
-        if (props.horizontal) {
-          elementScrollable.value!.scrollLeft =
-            (trackLeft.value / thumbSize.value) * scrollSize.value;
-        } else {
-          elementScrollable.value!.scrollLeft =
-            (trackTop.value / thumbSize.value) * scrollSize.value;
-        }
-      }
-    });
-    window.addEventListener('mouseup', () => {
-      if (movingTrack.value) {
-        movingTrack.value = false;
-      }
-    });
-    window.addEventListener('resize', () => {
+    checkHaveScroll();
+    setTimeout(() => {
       setSizeScrollbar();
-      checkHaveScroll();
-    });
-})
+    }, 100);
+  }, 100);
+
+  elementScrollable.value = document.getElementById(props.id) as HTMLElement;
+  elementScrollable.value.addEventListener('scroll', handleScrollable);
+  window.addEventListener('mousemove', handleMousemove);
+  window.addEventListener('mouseup', handleMouseup);
+  window.addEventListener('resize', handleResize);
+});
 
 onUnmounted(() => {
-  console.log('unmount')
-})
+  elementScrollable.value.removeEventListener('scroll', handleScrollable);
+  window.removeEventListener('mousemove', handleMousemove);
+  window.removeEventListener('mouseup', handleMouseup);
+  window.removeEventListener('resize', handleResize);
+});
+
+/**
+ * Xử lý sự kiện scroll
+ * @createdby ntdung 23.05.2023
+ **/
+function handleScrollable() {
+  if (!props.horizontal) {
+    let scrollTop = elementScrollable.value!.scrollLeft;
+    trackTop.value = (scrollTop / scrollSize.value) * thumbSize.value;
+  } else {
+    let scrollLeft = elementScrollable.value!.scrollLeft;
+    trackLeft.value = (scrollLeft / scrollSize.value) * thumbSize.value;
+  }
+}
+
+/**
+ * Xử lý sự kiện mousemove
+ * @createdby ntdung 23.05.2023
+ **/
+function handleMousemove(e: any) {
+  if (movingTrack.value) {
+    clearSelection();
+    var outWrapperVal = outWrapper(e);
+    if (!outWrapperVal.out) {
+      if (props.horizontal) {
+        trackLeft.value = e.clientX - startX.value;
+      } else {
+        trackTop.value = e.clientY - startY.value;
+      }
+    } else {
+      if (!props.horizontal) {
+        if (
+          trackTop.value <
+          thumbSize.value - trackSize.value - trackTop.value
+        ) {
+          trackTop.value = 0;
+        } else {
+          trackTop.value = thumbSize.value - trackSize.value;
+        }
+      } else {
+        if (
+          trackLeft.value <
+          thumbSize.value - trackSize.value - trackLeft.value
+        ) {
+          trackLeft.value = 0;
+        } else {
+          trackLeft.value = thumbSize.value - trackSize.value;
+        }
+      }
+    }
+    if (props.horizontal) {
+      elementScrollable.value!.scrollLeft =
+        (trackLeft.value / thumbSize.value) * scrollSize.value;
+    } else {
+      elementScrollable.value!.scrollLeft =
+        (trackTop.value / thumbSize.value) * scrollSize.value;
+    }
+  }
+}
+
+/**
+ * Xử lý sự kiện mouseup
+ * @createdby ntdung 23.05.2023
+ **/
+function handleMouseup() {
+  if (movingTrack.value) {
+    movingTrack.value = false;
+  }
+}
+
+/**
+ * Xử lý sự kiện resize
+ * @createdby ntdung 23.05.2023
+ **/
+function handeResize() {
+  setSizeScrollbar();
+  checkHaveScroll();
+}
 
 /**
  * Xử lý khi click vào main scrollbar
  * @createdby ntdung 23.05.2023
  **/
-function mousedownMain(e : any) {
+function mousedownMain(e: any) {
   let size = track.value?.getBoundingClientRect() as DOMRect;
   if (props.horizontal) {
     if (e.clientX < size.left) {
@@ -168,13 +194,11 @@ function mousedownMain(e : any) {
  * Xử lý khi nhấn xuống track
  * @createdby ntdung 23.05.2023
  **/
-function mousedownTrack(e : any) { 
+function mousedownTrack(e: any) {
   if (track.value) {
     movingTrack.value = true;
-    startY.value =
-      e.clientY - parseInt(getComputedStyle(track.value).top);
-    startX.value =
-      e.clientX - parseInt(getComputedStyle(track.value).left);
+    startY.value = e.clientY - parseInt(getComputedStyle(track.value).top);
+    startX.value = e.clientX - parseInt(getComputedStyle(track.value).left);
   }
 }
 
@@ -253,7 +277,7 @@ function clearSelection() {
  * Kiểm tra đã ra ngoài wrapper
  * @createdby ntdung 23.05.2023
  **/
-function outWrapper(e : any) {
+function outWrapper(e: any) {
   let offset = props.horizontal
     ? e.clientX - startX.value
     : e.clientY - startY.value;
