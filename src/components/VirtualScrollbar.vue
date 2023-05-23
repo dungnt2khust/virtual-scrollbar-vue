@@ -148,7 +148,7 @@ function handleMouseup() {
  * Xử lý sự kiện resize
  * @createdby ntdung 23.05.2023
  **/
-function handeResize() {
+function handleResize() {
   setSizeScrollbar();
   checkHaveScroll();
 }
