@@ -80,7 +80,7 @@ function handleScrollable() {
     let scrollLeft = elementScrollable.value!.scrollLeft;
     trackLeft.value = (scrollLeft / scrollSize.value) * thumbSize.value;
   } else {
-    let scrollTop = elementScrollable.value!.scroll;
+    let scrollTop = elementScrollable.value!.scrollTop;
     trackTop.value = (scrollTop / scrollSize.value) * thumbSize.value;
   }
 }
