@@ -3,7 +3,7 @@ import VirtualScrollbar from './components/VirtualScrollbar.vue';
 </script>
 
 <template>
-  <div class="d-flex flex-column">
+  <div class="d-flex flex-column position-relative">
     <div id="scrollable" class="scrollable" style="margin-right: 10px">
       <div class="scrollable__content">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas quis
@@ -80,6 +80,12 @@ import VirtualScrollbar from './components/VirtualScrollbar.vue';
     </div>
 
     <VirtualScrollbar :horizontal="true" id="scrollable"></VirtualScrollbar>
+    <VirtualScrollbar
+      class="position-absolute"
+      style="top: 0; bottom: 0; right: 0"
+      :horizontal="false"
+      id="scrollable"
+    ></VirtualScrollbar>
   </div>
 </template>
 

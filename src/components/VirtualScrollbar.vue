@@ -80,12 +80,12 @@ onUnmounted(() => {
  * @createdby ntdung 23.05.2023
  **/
 function handleScrollable() {
-  if (!props.horizontal) {
-    let scrollTop = elementScrollable.value!.scrollLeft;
-    trackTop.value = (scrollTop / scrollSize.value) * thumbSize.value;
-  } else {
+  if (props.horizontal) {
     let scrollLeft = elementScrollable.value!.scrollLeft;
     trackLeft.value = (scrollLeft / scrollSize.value) * thumbSize.value;
+  } else {
+    let scrollTop = elementScrollable.value!.scrollLeft;
+    trackTop.value = (scrollTop / scrollSize.value) * thumbSize.value;
   }
 }
 
@@ -128,7 +128,7 @@ function handleMousemove(e: any) {
       elementScrollable.value!.scrollLeft =
         (trackLeft.value / thumbSize.value) * scrollSize.value;
     } else {
-      elementScrollable.value!.scrollLeft =
+      elementScrollable.value!.scrollTop =
         (trackTop.value / thumbSize.value) * scrollSize.value;
     }
   }
@@ -178,7 +178,7 @@ function mousedownMain(e: any) {
       var newTop = trackTop.value - trackSize.value;
       trackTop.value = newTop ? newTop : 0;
     }
-    if (e.clientY > size.top) {
+    if (e.clientY > size.bottom) {
       var newTop = trackTop.value + trackSize.value;
       trackTop.value =
         newTop <= thumbSize.value - trackSize.value
@@ -226,9 +226,16 @@ function setSizeScrollbar() {
  */
 function checkHaveScroll() {
   if (elementScrollable.value) {
-    let scrollWidth = elementScrollable.value.scrollWidth;
-    let width = elementScrollable.value.getBoundingClientRect().width;
-    if (scrollWidth > width) {
+    let scrollDimension = 0;
+    let dimension = 0;
+    if (props.horizontal) {
+      scrollDimension = elementScrollable.value.scrollWidth;
+      dimension = elementScrollable.value.getBoundingClientRect().width;
+    } else {
+      scrollDimension = elementScrollable.value.scrollHeight;
+      dimension = elementScrollable.value.getBoundingClientRect().height;
+    }
+    if (scrollDimension > dimension) {
       haveScroll.value = true;
     } else {
       haveScroll.value = false;
