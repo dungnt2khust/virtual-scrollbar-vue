@@ -30,12 +30,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+declare const window : any;
 
 const props = defineProps<{ horizontal: boolean; id: string }>();
 
 // Ref element
-const wrapper = ref(null);
-const track = ref(null);
+const wrapper = ref<HTMLElement>();
+const track = ref<HTMLElement>();
 
 // Properties
 const positionScroll = ref<number>(0);
@@ -49,11 +50,77 @@ const scrollSize = ref<number>(0);
 
 const thumbSize = ref<number>(0);
 const trackSize = ref<number>(0);
-const elementScrollable = ref<HTMLElement>(null);
+const elementScrollable = ref<HTMLElement>();
 const haveScroll = ref<boolean>(false);
 
 onMounted(() => {
-  console.log('mount')
+  setTimeout(() => {
+      checkHaveScroll();
+      setTimeout(() => {
+        setSizeScrollbar();
+      }, 100);
+    }, 100);
+
+    elementScrollable.value = document.getElementById(props.id) as HTMLElement;
+    elementScrollable.value.addEventListener('scroll', () => {
+      if (!props.horizontal) {
+        let scrollTop = elementScrollable.value!.scrollLeft;
+        trackTop.value = (scrollTop / scrollSize.value) * thumbSize.value;
+      } else {
+        let scrollLeft = elementScrollable.value!.scrollLeft;
+        trackLeft.value = (scrollLeft / scrollSize.value) * thumbSize.value;
+      }
+    });
+
+    window.addEventListener('mousemove', (e : any) => {
+      if (movingTrack.value) {
+        clearSelection();
+        var outWrapperVal = outWrapper(e);
+        if (!outWrapperVal.out) {
+          if (props.horizontal) {
+            trackLeft.value = e.clientX - startX.value;
+          } else {
+            trackTop.value = e.clientY - startY.value;
+          }
+        } else {
+          if (!props.horizontal) {
+            if (
+              trackTop.value <
+              thumbSize.value - trackSize.value - trackTop.value
+            ) {
+              trackTop.value = 0;
+            } else {
+              trackTop.value = thumbSize.value - trackSize.value;
+            }
+          } else {
+            if (
+              trackLeft.value <
+              thumbSize.value - trackSize.value - trackLeft.value
+            ) {
+              trackLeft.value = 0;
+            } else {
+              trackLeft.value = thumbSize.value - trackSize.value;
+            }
+          }
+        }
+        if (props.horizontal) {
+          elementScrollable.value!.scrollLeft =
+            (trackLeft.value / thumbSize.value) * scrollSize.value;
+        } else {
+          elementScrollable.value!.scrollLeft =
+            (trackTop.value / thumbSize.value) * scrollSize.value;
+        }
+      }
+    });
+    window.addEventListener('mouseup', () => {
+      if (movingTrack.value) {
+        movingTrack.value = false;
+      }
+    });
+    window.addEventListener('resize', () => {
+      setSizeScrollbar();
+      checkHaveScroll();
+    });
 })
 
 onUnmounted(() => {
@@ -64,8 +131,8 @@ onUnmounted(() => {
  * Xử lý khi click vào main scrollbar
  * @createdby ntdung 23.05.2023
  **/
-function mousedownMain(e) {
-  let size = track.value?.getBoundingClientRect();
+function mousedownMain(e : any) {
+  let size = track.value?.getBoundingClientRect() as DOMRect;
   if (props.horizontal) {
     if (e.clientX < size.left) {
       var newLeft = trackLeft.value - trackSize.value;
@@ -78,7 +145,7 @@ function mousedownMain(e) {
           ? newLeft
           : thumbSize.value - trackSize.value;
     }
-    elementScrollable.value?.scrollLeft =
+    elementScrollable.value!.scrollLeft =
       (trackLeft.value / thumbSize.value) * scrollSize.value;
   } else {
     if (e.clientY < size.top) {
@@ -92,7 +159,7 @@ function mousedownMain(e) {
           ? newTop
           : thumbSize.value - trackSize.value;
     }
-    elementScrollable.value?.scrollTop =
+    elementScrollable.value!.scrollTop =
       (trackTop.value / thumbSize.value) * scrollSize.value;
   }
 }
@@ -101,12 +168,14 @@ function mousedownMain(e) {
  * Xử lý khi nhấn xuống track
  * @createdby ntdung 23.05.2023
  **/
-function mousedownTrack(e) {
-  movingTrack.value = true;
-  startY.value =
-    e.clientY - parseInt(getComputedStyle(track.value?).top);
-  startX.value =
-    e.clientX - parseInt(getComputedStyle(track.value?).left);
+function mousedownTrack(e : any) { 
+  if (track.value) {
+    movingTrack.value = true;
+    startY.value =
+      e.clientY - parseInt(getComputedStyle(track.value).top);
+    startX.value =
+      e.clientX - parseInt(getComputedStyle(track.value).left);
+  }
 }
 
 /**
@@ -114,15 +183,15 @@ function mousedownTrack(e) {
  * createdby ntdung5 23.05.2023
  */
 function setSizeScrollbar() {
-  var scrollable = document.getElementById(props.id);
+  var scrollable = document.getElementById(props.id) as HTMLElement;
   if (props.horizontal) {
     clientSize.value = scrollable.clientWidth;
     scrollSize.value = scrollable.scrollWidth;
-    thumbSize.value = wrapper.value?.getBoundingClientRect().width;
+    thumbSize.value = wrapper.value?.getBoundingClientRect().width || 0;
   } else {
     clientSize.value = scrollable.clientHeight;
     scrollSize.value = scrollable.scrollHeight;
-    thumbSize.value = wrapper.value?.getBoundingClientRect().height;
+    thumbSize.value = wrapper.value?.getBoundingClientRect().height || 0;
   }
   trackSize.value = (clientSize.value / scrollSize.value) * thumbSize.value;
 }
@@ -184,7 +253,7 @@ function clearSelection() {
  * Kiểm tra đã ra ngoài wrapper
  * @createdby ntdung 23.05.2023
  **/
-function outWrapper(e) {
+function outWrapper(e : any) {
   let offset = props.horizontal
     ? e.clientX - startX.value
     : e.clientY - startY.value;
